@@ -272,6 +272,7 @@ deliveryRouter.post("/api/add-delivery", async (req, res) => {
     var devices = [];
     devices.push(user.device)
   
+    
       const notification = {
         contents: { en: 'Your package status has been updated to '+ progress },
         included_segments: ['included_player_ids'],
