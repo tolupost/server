@@ -56,8 +56,8 @@ var paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
 var uuid = require('node-uuid');
 
 const PORT = 3000;
-// const DB = 'mongodb+srv://richard:liverpool@cluster0.vxcma1z.mongodb.net/?retryWrites=true&w=majority';
- const DB = "mongodb+srv://tolulong45:liverpool@cluster0.ucfkvuy.mongodb.net/?retryWrites=true&w=majority";
+const DB = 'mongodb+srv://richard:liverpool@cluster0.vxcma1z.mongodb.net/?retryWrites=true&w=majority';
+// const DB = "mongodb+srv://tolulong45:liverpool@cluster0.ucfkvuy.mongodb.net/?retryWrites=true&w=majority";
 const app = express();
 
 // IMPORTS FROM OTHER FILES
