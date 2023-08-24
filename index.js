@@ -60,6 +60,8 @@ const DB = 'mongodb+srv://richard:liverpool@cluster0.vxcma1z.mongodb.net/?retryW
 // const DB = "mongodb+srv://tolulong45:liverpool@cluster0.ucfkvuy.mongodb.net/?retryWrites=true&w=majority";
 const app = express();
 
+
+
 // IMPORTS FROM OTHER FILES
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
