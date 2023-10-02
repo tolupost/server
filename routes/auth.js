@@ -7,11 +7,16 @@ const auth = require("../middlewares/auth");
 const userServices = require("../services/services");
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+const Termii = require("termii-nodejs").Termii;
+
+const request = require('request');
 const client = require("twilio")(accountSid, authToken);
 const OneSignal = require('onesignal-node');
 const otpGenerator = require("otp-generator");
 const crypto = require("crypto");
 const key = "verysecretkey";
+const sender_id = "tsk_z96e64c8fc8b8468b82407o7vo";
+const api_key = "TLXuGJeZPF0az5wcPLXNcSgYF5xKJW4dFNftaMWwVG3NFxRD3qGQu4VGD3GDTW";
 
 
 
@@ -95,45 +100,80 @@ authRouter.post("/otp", async (req, res) => {
     });
   });
   const otpStorage = {};
-authRouter.post('/api/generate-otp', async(req, res) => {
-  try {
-    const { phone} = req.body;
-// Check if an OTP has already been generated for the phone number and if it has expired
-const otpInfo = otpStorage[phone];
-if (otpInfo && otpInfo.expiryTime > Date.now()) {
-  // If OTP found not expired, send the existing OTP back in the response
-  res.send({ otp: otpInfo.otp });
-  return;
-}
-
-// Generate a new 6-digit OTP
-const otp = otpGenerator.generate(6, {
-  upperCaseAlphabets: false, 
-  lowerCaseAlphabets:false,
-  specialChars: false 
-});
-
-// Store the new OTP and the expiry time in memory
-const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes
-otpStorage[phone] = { otp, expiryTime };
-
-// Create message with One Time Password
-var otpMessage = `Dear Customer, ${otp} is the One Time Password ( OTP ) for your login.`;
 
 // Send SMS message containing OTP to destination number using Twilio
-client.messages
-  .create({ body: otpMessage, from: "+17622488287", to: `+234${phone}` })
-  .then(message => console.log(message.sid)).done();
+// client.messages
+  // .create({ body: otpMessage, from: "+17622488287", to: `+234${phone}` })
+  // .then(message => console.log(message.sid)).done();
 
-// Send the new OTP back in the response
-console.log(otp);
-res.send({ otp });
- 
 
+
+authRouter.post('/api/generate-otp', async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    // Check if an OTP has already been generated for the phone number and if it has expired
+    const otpInfo = otpStorage[phone];
+    if (otpInfo && otpInfo.expiryTime > Date.now()) {
+      // If OTP found not expired, send the existing OTP back in the response
+      res.send({ otp: otpInfo.otp });
+      return;
+    }
+
+    // Generate a new 6-digit OTP
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    // Store the new OTP and the expiry time in memory
+    const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes
+    otpStorage[phone] = { otp, expiryTime };
+
+    // Create message with One Time Password
+    const otpMessage = `Dear Customer, ${otp} is the One Time Password ( OTP ) for your login.`;
+
+    // Define the Termii API data
+    const termiiData = {
+      to: `+234${phone}`,
+      from: "Posterbox",
+      sms: otpMessage,
+      type: "plain",
+      api_key: "TLXuGJeZPF0az5wcPLXNcSgYF5xKJW4dFNftaMWwVG3NFxRD3qGQu4VGD3GDTW",
+      channel: "generic",
+    };
+
+    // Set up the Termii API request options
+    const termiiOptions = {
+      method: 'POST',
+      url: 'https://api.ng.termii.com/api/sms/send',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(termiiData),
+    };
+
+    // Send the OTP message using the Termii API
+    request(termiiOptions, function (error, response) {
+      if (error) {
+        // Handle the error here
+        res.status(500).json({ error: 'Failed to send OTP via Termii' });
+        return;
+      }
+
+      // If successful, log the response from Termii
+      console.log(response.body);
+
+      // Send the new OTP back in the response
+      console.log(otp);
+      res.send({ otp });
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+
  
 
   
